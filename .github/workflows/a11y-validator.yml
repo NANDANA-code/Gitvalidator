@@ -42,7 +42,7 @@ jobs:
         with:
           node-version: "20"
 
-      # Step 3 - Python for DITA lxml parser (no cache - avoids requirements.txt error)
+      # Step 3 - Python for DITA lxml parser
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -52,22 +52,28 @@ jobs:
       - name: Install Node dependencies
         run: npm ci
 
-      # Step 5 - Install lxml for DITA XML parsing
+      # Step 5 - Install Chrome + ChromeDriver (required for axe-core)
+      - name: Install Chrome Driver
+        run: |
+          npm install -g browser-driver-manager
+          npx browser-driver-manager install chrome
+
+      # Step 6 - Install lxml for DITA XML parsing
       - name: Install Python dependencies
         run: pip install lxml
 
-      # Step 6 - Fetch main so the diff baseline exists
+      # Step 7 - Fetch main so the diff baseline exists
       - name: Fetch main branch
         run: git fetch origin main --no-tags
 
-      # Step 7 - Run GAV - exit code 1 blocks the merge
+      # Step 8 - Run GAV - exit code 1 blocks the merge
       - name: Run GAV Orchestrator
         id: gav
         run: |
           python validator.py 2>&1 | tee gav_report.txt
           exit ${PIPESTATUS[0]}
 
-      # Step 8 - Post report as PR comment (runs even when gate fails)
+      # Step 9 - Post report as PR comment (runs even when gate fails)
       - name: Post GAV Summary to PR
         if: always()
         uses: actions/github-script@v7
@@ -99,13 +105,13 @@ jobs:
             ].join('\n');
 
             await github.rest.issues.createComment({
-              owner:        context.repo.owner,
-              repo:         context.repo.repo,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
               issue_number: context.issue.number,
-              body:         comment
+              body: comment
             });
 
-      # Step 9 - Upload report as downloadable artifact
+      # Step 10 - Upload report as downloadable artifact
       - name: Upload GAV report
         if: always()
         uses: actions/upload-artifact@v4
