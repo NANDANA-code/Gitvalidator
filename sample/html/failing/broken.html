@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Inaccessible Page</title>
+</head>
+<body>
+
+  <!-- FAIL: image missing alt text
+       Fix: add alt="description of image" -->
+  <img src="logo.png">
+
+  <!-- FAIL: button has no label
+       Fix: add text inside button -->
+  <button type="button"></button>
+
+  <!-- FAIL: input has no label
+       Fix: add <label for="username">Username</label> -->
+  <input type="text" id="username" name="username">
+
+  <!-- FAIL: table has no headers
+       Fix: add <thead> with <th> elements -->
+  <table>
+    <tbody>
+      <tr>
+        <td>Alice</td>
+        <td>30</td>
+        <td>New York</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- FAIL: link has no descriptive text
+       Fix: add meaningful text inside link -->
+  <a href="/about">Click here</a>
+
+</body>
+</html>
