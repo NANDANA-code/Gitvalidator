@@ -1,0 +1,115 @@
+##############################################################################
+#  GAV - Git Accessibility Validator
+#  Merge-Request Gate | WCAG 2.1 Enforcement
+#
+#  Triggers on every Pull Request targeting the main branch.
+#  Blocks merge if any HTML, Markdown, or DITA accessibility violation
+#  is detected across the changed file set.
+##############################################################################
+
+name: GAV Accessibility Gate
+
+on:
+  pull_request:
+    branches:
+      - main
+    types: [opened, synchronize, reopened]
+
+concurrency:
+  group: gav-${{ github.head_ref }}
+  cancel-in-progress: true
+
+jobs:
+  accessibility-gate:
+    name: GAV Accessibility Validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      # Step 1 - Full checkout so git diff origin/main...HEAD works
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Step 2 - Node.js for axe-core and markdownlint
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      # Step 3 - Python for DITA lxml parser (no cache - avoids requirements.txt error)
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # Step 4 - Install Node packages
+      - name: Install Node dependencies
+        run: npm ci
+
+      # Step 5 - Install lxml for DITA XML parsing
+      - name: Install Python dependencies
+        run: pip install lxml
+
+      # Step 6 - Fetch main so the diff baseline exists
+      - name: Fetch main branch
+        run: git fetch origin main --no-tags
+
+      # Step 7 - Run GAV - exit code 1 blocks the merge
+      - name: Run GAV Orchestrator
+        id: gav
+        run: |
+          python validator.py 2>&1 | tee gav_report.txt
+          exit ${PIPESTATUS[0]}
+
+      # Step 8 - Post report as PR comment (runs even when gate fails)
+      - name: Post GAV Summary to PR
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const body = fs.existsSync('gav_report.txt')
+              ? fs.readFileSync('gav_report.txt', 'utf8').trim()
+              : 'GAV report not generated.';
+
+            const status = '${{ steps.gav.outcome }}' === 'success'
+              ? 'All accessibility checks passed.'
+              : 'Accessibility violations found - merge is blocked.';
+
+            const comment = [
+              '## GAV - Git Accessibility Validator',
+              `**${status}**`,
+              '',
+              '<details><summary>Full Report</summary>',
+              '',
+              '```',
+              body.slice(0, 60000),
+              '```',
+              '',
+              '</details>',
+              '',
+              `_Triggered by commit \`${{ github.event.pull_request.head.sha }}\`_`
+            ].join('\n');
+
+            await github.rest.issues.createComment({
+              owner:        context.repo.owner,
+              repo:         context.repo.repo,
+              issue_number: context.issue.number,
+              body:         comment
+            });
+
+      # Step 9 - Upload report as downloadable artifact
+      - name: Upload GAV report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gav-accessibility-report
+          path: gav_report.txt
+          retention-days: 30

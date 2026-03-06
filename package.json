@@ -1,0 +1,18 @@
+{
+  "name": "gav-accessibility-validator",
+  "version": "1.0.0",
+  "description": "GAV - Git Accessibility Validator. WCAG 2.1 CI/CD merge gate.",
+  "private": true,
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "scripts": {
+    "validate": "python3 validator.py"
+  },
+  "dependencies": {
+    "@axe-core/cli": "^4.9.1",
+    "markdownlint-cli": "^0.43.0"
+  }
+}

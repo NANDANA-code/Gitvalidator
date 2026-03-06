@@ -1,0 +1,12 @@
+{
+  "default": true,
+  "MD013": { "line_length": 120 },
+  "MD033": {
+    "allowed_elements": ["kbd", "sub", "sup", "br", "details", "summary"]
+  },
+  "MD041": true,
+  "MD022": true,
+  "MD032": true,
+  "MD036": true,
+  "MD007": { "indent": 2 }
+}
