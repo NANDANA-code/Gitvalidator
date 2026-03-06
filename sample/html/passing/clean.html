@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Accessible Page</title>
+</head>
+<body>
+
+  <!-- PASS: image has alt text -->
+  <img src="logo.png" alt="Company logo">
+
+  <!-- PASS: button has a label -->
+  <button type="button">Submit Form</button>
+
+  <!-- PASS: form input has a label -->
+  <label for="username">Username</label>
+  <input type="text" id="username" name="username">
+
+  <!-- PASS: table has headers -->
+  <table>
+    <thead>
+      <tr>
+        <th scope="col">Name</th>
+        <th scope="col">Age</th>
+        <th scope="col">City</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Alice</td>
+        <td>30</td>
+        <td>New York</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- PASS: link has descriptive text -->
+  <a href="/about">Read about our company</a>
+
+</body>
+</html>
